@@ -12,62 +12,44 @@ class astr:
     def limpar_tela(self):    
         system('cls' if name == 'nt' else 'clear')
 
-    def select_type(self,ty):
-        x =''
-        lista={}
+    def list_type(self,value):
+        x=''
+        dicionario={}
         for i in range(0,8,1):
             x= str(format(i, "b"))
             
             for j in range(0,3,1):
                 if int(len(x)) <3:
                     x = '0'+x
-            lista[i]=x
+            dicionario[i]=x
+        lista=[]
+        for key,values in dicionario.items():
+            if str(value) == str(key):
+                for i in range(0,len(str(values)),1):
+                    lista.append(int(values[i]))
+        return lista
+    def select_type(self):
+        x =''
 
-        cont = int(0)
-        negative=''
-        neglista={}
-        dictbin={}
-        for val in lista.values():
-            cont = cont-1
-            x =str(val)
-            negative=''
-            for i in range(0,len(x),1):
-                
-                if x[i]== '0':
-                    negative = negative+"1"
-                else:
-                    negative= negative+'0'
-            print(cont,':',negative)
-            neglista[cont]=negative
 
-        dictbin = {**neglista,**lista}
-        
-        acess_bin = str
-        acess_int = int
-        return_list = []
-        cont_len=int(0)
-        search_with = int
+        search_with = 0
+        cont_len=0
+        return_list=[]
 
         while search_with != -1: #laço de repetição externo para 3 opções
 
             self.limpar_tela()
-            self.__str__("<Deseja Digitar a busca do(a)->"+str(ty)+" <- Em>\n[1]-Por Numeros Bin(0's & 1's).\n[2]-Por Numero Inteiro.\nSelecione(0-Voltar Para calculadora):\n")
+            self.__str__("<Deseja pegar o valor no <Em>\n[1]-Seu Valor Bin(0's & 1's).\n[2]-Por Numero Inteiro.\nSelecione(0-Voltar Para calculadora):\n")
             search_with = int(input())
-
             if search_with == int(1): # opção de digitar os valores em binario
-                
+
                 while search_with == 1: #laço de repetição interna para 3 opções
                     self.limpar_tela()
-                    self.__str__("Digite se o Binario vai ser positivo ou negativo([1] = + //[2] = - )  ")
-                    acess_bin = input() #transforma variavel reciclada no valor que busca
-                    if acess_bin == '2':
-                        return_list.append('-')
-                    else:
-                        return_list.append('+')
-                    self.limpar_tela()
+                    if cont_len != 0:
+                        cont_len = 0
+                        print("error: Por favor apenas 0 ou 1. ",end='')
                     self.__str__("Digite o valor[3 - posições]:\n")
                     acess_bin = input() #transforma variavel reciclada no valor que busca
-
                     if len(acess_bin) == 3:
 
                         for i in range (0,len(acess_bin),1):
@@ -78,9 +60,9 @@ class astr:
                                     return return_list
                             else:
                                 pass
-                        cont_len=0
+                        
                         return_list=[]
-                    print("erro")
+ 
                     input()
                     acess_bin =''
     
@@ -90,24 +72,12 @@ class astr:
                 while cont_len == 0:
 
                     self.limpar_tela()
-                    self.__str__("Digite um valor inteiro[entre 7 e -7 ]:\n")
+                    self.__str__("Digite um valor inteiro[entre 0 a 7 ]:\n")
                     acess_int = int(input())
 
-                    if acess_int >=-7 and acess_int <=7:
-                        if acess_int <0:
-                            return_list.append('-')
-                            for key,values in dictbin.items():
-                                if str(acess_int) == str(key):
-                                    for i in range(0,len(str(values)),1):
-                                        return_list.append(int(values[i]))
-
-                        if acess_int >=1:
-                            return_list.append('+')
-                            for key,values in dictbin.items():
-                                if str(acess_int) == str(key):
-                                    for i in range(0,len(str(values)),1):
-                                        return_list.append(int(values[i]))
-
+                    if acess_int >=0 and acess_int <=7:
+                        if acess_int >=0:
+                            return_list = self.list_type(acess_int)
                         return return_list
 
 
@@ -118,129 +88,160 @@ class astr:
 
 
 class LO(astr):
+
     def __init__(self,value):
         astr.__init__(self)
         self.value = value
         self.stringv = ''
+
+
+    def OR(self,A_val,B_val):
+        A_val = A_val | B_val
+        return int(A_val)
+
+    def NOT(self,A_val):
+        A_val = int(not A_val)
+        return int(A_val)
+
+
+    def AND(self,A_val,B_val):
+        A_val = A_val & B_val
+        return int(A_val)
+
+    def XOR(self,A_val,B_val):
+        A_val = A_val ^ B_val
+        return int(A_val)
+
+#0|0|0   |1
+#0|1|1-1 |0
+#1|1|0   |
+class ULA(LO):
+    def __init__(self,value =0):
+        LO.__init__(self,value)
+        self. value = value
+
+    '''SOM irei Utilizar AND,OR,XOR,NOT Nessa exata sequencia, onde um valor Y virá para interpretar uma condição
+    Condição Y > A & B = 1. Pois quando fizer isso significa que nessa casa deverá ser interagida no proximo laço.
+    Laço decrementado para ficar simples de ser lido da Direita para esquerda.
+    quando Y voltar 1, Estaremos tratando a proxima linha de posição ( i !=0 como condição de parada, evitar overflow).'''
+    def som(self,lista,listb):
+        Y=int(0)
+        for i in range(2,0,-1):
+            
+            Y= int(self.AND(lista[i],listb[i]))
+            if Y == 1:
+                lista[i] = self.XOR(lista[i],Y)
+                if i > -1:
+                    lista[i-1] =self.NOT(lista[i-1])
+            else:
+                lista[i] = self.OR(lista[i],listb[i])
+
+        print(lista)
+        return lista
+
+    def sub(self,lista,listb):
+        Y=int(0)
+        for i in range(2,0,-1):
+            #listb[i] = self.NOT(lista[i])
+            Y= int(self.XOR(lista[i],listb[i]))
+            if Y == 1:
+                lista[i] = self.XOR(lista[i],listb[i])
+                if i != 0:
+                    listb[i-1] = self.OR (lista[i-1],listb[i-1])
+            else:
+                lista[i] = self.NOT(lista[i])
+        print(lista)
+        return lista
+
+    '''Projetando'''
+    def div(self,lista,listb):
+
+        pass
+        return lista
+
+
+    def mult(self,lista,listb):
+        copylist=[]
+        
+        endlist=self.list_type(0)
+        Y=int(0)
+
+        endlist= self.list_type(0)
+        for i in range(0,3,1):
+            copylist= lista
+            Y=int(0)
+            for j in range(2,0,-1):
+                copylist[j] = int(self.XOR(lista[j],listb[j]))
+
+            
+            for k in range(i,0,-1):
+                Y= int(self.AND(copylist[k],copylist[k]))
+                #print(endlist,'AND')
+                if Y == 1:
+                    endlist[k] = self.XOR(copylist[k],Y)
+                    #print(endlist,'XOR')
+                    if k != 0:
+                        endlist[k-1] =self.NOT(copylist[i-1])
+                        #print(endlist,'NOT')
+                    else:
+                        endlist[k] = self.OR(copylist[k],copylist[k])
+                        #print(endlist,'OR')
+
+                input(endlist)
+        return lista
+
+
+        print(endlist,'depois')
+        return lista
+
+
+
+
+
+
+class Calc(ULA,LO,astr): #Classe simples que não necessita de variaveis condicionais para acessala porém usam três variaveis locais
+    def __init__(self,value=0):
+        ULA.__init__(self,value)
+        LO.__init__(self,value)
+        astr.__init__(self)
+        self.__info =''
+        self.value  =value
         self.bin1 = []
-        self.bin2 =[]
+        self.bin2 = []
 
+    @property
+    def menu(self): 
 
-    def OU(self):
-        #print(self.bin1[1:],' or ',self.bin2[1:],' =')
-        self.stringv = str(self.bin1[1:])+' OR '+str(self.bin2[1:])+' = '
-        if self.bin1[0] == '-' or self.bin2[0] == '-':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                print(type(x))
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"0"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==1:
-                        self.stringv = self.stringv+"1"
-        elif self.bin1[0] == '+' and self.bin2[0] == '+':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"1"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"1"
-        #print(self.stringv)
-        #input()
-        return self.stringv
+        if self.__info == 1:
+            print("alou")
+            
+            self.__info = self.listLO 
 
-    def NOT(self):
-        #print(self.bin1[1:],' or ',self.bin2[1:],' =')
-        self.stringv = 'NOT: '+str(self.bin1[1:])+' = '
-        self.bin1.pop(0)
-        for x in self.bin1:
-            if x == int(0):
-                self.stringv = self.stringv+"1"
-            elif x == int(1):
-                self.stringv = self.stringv+"0"
-        #print(self.stringv)
-        #input()
-        return self.stringv
-
-
-    def AND(self):
-        #print(self.bin1[1:],' or ',self.bin2[1:],' =')
-        self.stringv = str(self.bin1[1:])+' AND '+str(self.bin2[1:])+' = '
-        if self.bin1[0] == '-' or self.bin2[0] == '-':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"1"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==1:
-                        self.stringv = self.stringv+"0"
-        elif self.bin1[0] == '+' and self.bin2[0] == '+':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"0"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"1"
-        #print(self.stringv)
-        #input()
-        return self.stringv
-
-    def XOR(self):
-        #print(self.bin1[1:],' or ',self.bin2[1:],' =')
-        self.stringv = str(self.bin1[1:])+' XOR '+str(self.bin2[1:])+' = '
-        if self.bin1[0] == '-' or self.bin2[0] == '-':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                print(type(x))
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"0"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==1:
-                        self.stringv = self.stringv+"0"
-        elif self.bin1[0] == '+' and self.bin2[0] == '+':
-            self.bin1.pop(0);self.bin2.pop(0)
-            for x,y in zip(self.bin1,self.bin2):
-                if x == int(0):
-                    if y == int(0):
-                        self.stringv = self.stringv+"0"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"1"
-                elif x == int(1):
-                    if y == int(0):
-                        self.stringv = self.stringv+"1"
-                    elif y ==int(1):
-                        self.stringv = self.stringv+"0"
-        #print(self.stringv)
-        #input()
-        return self.stringv
-
+            return self.__info
+        elif self.__info == 2:
+            
+            self.__info = self.listOPA
+        
+        return self.__info
+        
+        
+    @menu.setter
+    def menu(self,value):
+        value = int
+        while value != -1:
+            self.limpar_tela()
+            self.__str__("Selecione -1- Para Operações Lógicas\nSelecione -2- Para Operações Aritimeticas.\n(0-Parar)Digite:")
+            value = int(input())
+            if value == int(1):
+                self.listLO=0
+                value = -1
+            elif value == int(2):
+                self.listOPA=0
+                value = -1
+            elif value == int(0):
+                self.__str__("Stop!")
+                exit()
+        self.__info = value
 
     @property
     def listLO(self):
@@ -258,29 +259,31 @@ class LO(astr):
             
             if select == int(1):
                 self.__str__("opc1")
-                self.bin1 = self.select_type('1º ->OU/OR')
-                self.bin2 = self.select_type('2º ->OU/OR')
-                self.OU()
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.__info = self.OR(self.bin1,self.bin2)
+                print(self.__info)
                 select = -1
             elif select == int(2):
                 self.__str__("opc2")
-                self.bin1 = self.select_type('1º ->NÃO/NOT')
-                self.select_type('NOT')
-                self.NOT()
+                self.bin1 = self.select_type()
+                self.__info = self.NOT(self.bin1)
+                print(self.__info)
                 select = -1
             elif select == int(3):
                 self.__str__("opc2")
-                self.bin1 = self.select_type('1º ->E/AND')
-                self.bin2 = self.select_type('2º ->E/AND')
-                self.select_type('AND')
-                self.AND()
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.__info = self.AND(self.bin1,self.bin2)
+                print(self.__info)
+
                 select = -1
             elif select == int(4):
                 self.__str__("opc2")
-                self.bin1 = self.select_type('1º ->(Ou-ECLUSIVO)/XOR')
-                self.bin2 = self.select_type('2º ->(Ou-ECLUSIVO)/XOR')
-                self.select_type('XOR')
-                self.XOR()
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.__info = self.XOR(self.bin1,self.bin2)
+                print(self.__info)
                 select = -1
             else:
                 self.__str__("Stop!")
@@ -288,21 +291,7 @@ class LO(astr):
 
         return self.stringv
 
-
-
-
-
-#construindo...
-class OPA(astr):
-    def __init__(self,value):
-        astr.__init__(self)
-        self.value= value 
-        self.bin1 = int
-        self.bin2 = []
-
-
-
-
+    '''Def listOPA responsável por selecionar logica aritimetica Adição/Subtração/Divisão/Multiplicação'''
     @property
     def listOPA(self):
         print(self.bin1)
@@ -319,19 +308,29 @@ class OPA(astr):
             select = int(input())
             
             if select == int(1):
-                self.__str__("opc1")
-                self.select_type('ADIÇÃO/ADDITION')
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.bin1 = self.som(self.bin1,self.bin2)
+                input()
+                break
             elif select == int(2):
-                self.__str__("opc2")
-                self.select_type('SUBTRACAO/SUBTRACTION')
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.bin1 = self.sub(self.bin1,self.bin2)
+                input()
                 break
             elif select == int(3):
-                self.__str__("opc3")
-                self.select_type('DIVISÃO/DIVISION')
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.bin1 = self.div(self.bin1,self.bin2)
+                input()
                 break
             elif select == int(4):
-                self.__str__("opc4")
-                self.select_type('MULTIPLICAÇÃO/MULTIPLICATION')
+                self.bin1 = self.select_type()
+                self.bin2 = self.select_type()
+                self.bin1 = self.mult(self.bin1,self.bin2)
+                input()
+                break
             elif select == int(0):
                 self.__str__("Stop!")
                 return 0
@@ -339,59 +338,23 @@ class OPA(astr):
 
 
 
-
-
-
-class Calculated(OPA,LO,astr): #Classe simples que não necessita de variaveis condicionais para acessala porém usam três variaveis locais
-    def __init__(self,info = 0):
-        OPA.__init__(self,info)
-        LO.__init__(self,info)
-        astr.__init__(self)
-        self.__info = info #valor final do resultado
-
-    @property
-    def menu(self):
-        if self.__info == 1:
-            self.listLO = 0
-            self.__info = self.listLO
-
-            return self.__info
-        elif self.__info == 2:
-            self.listOPA = 0
-            self.__info = self.listOPA
-        
-        return self.__info
-        
-        
-    @menu.setter
-    def menu(self,value):
-        value = int
-        while value != -1:
-            self.limpar_tela()
-            self.__str__("Selecione -1- Para Operações Lógicas\nSelecione -2- Para Operações Aritimeticas.\n(0-Parar)Digite:")
-            #value = int(input())
-            value = 1
-            if value == int(1):
-                self.__str__("opc1")
-                break
-            elif value == int(2):
-                self.__str__("opc2")
-                break
-            elif value == int(0):
-                self.__str__("Stop!")
-                exit()
-        self.__info = value
-
-
-
-
-
-
 if __name__ == '__main__':
     print("Run Codding")
-    calcule = Calculated()
-    calcule.menu=0
-    print(calcule.menu)
+    calcule = Calc()
+    calcule.menu = 0
+    #x= astr().select_type()
+    #print(x) 
+
+    '''#y=input("digite valor dois:")
+    #print(bin(4))
+    #calcule.menu=0
+    #print(calcule.menu)
+
+    print(2<<1)'''
+
+    '''i=(0^0);print(0^0)
+    i=(i^1);print(i^1)
+    i=(i^0);print(i^0)'''
 
 #for i in range(0,30,1):
 #    print("{0:b}".format(i))
