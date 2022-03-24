@@ -1,2 +1,2 @@
 # Faculdade.py
-<h4>Projeto Calculadora Unidade Lógica Aritimética O.C</h4>
+<h4>Espaço aberto para estudos.</h4>
